@@ -243,7 +243,7 @@ local function DrawTextRight(x, y, text, bg, fg, alpha)
     end
 end
 
-local function DrawTextCentered(x, y, text, bg, fg, alpha)
+local function DrawTextCentred(x, y, text, bg, fg, alpha)
     for str in string.gmatch(text, "([^\n]+)") do
         local offset = MathFloor((#str - 1) / 2)
         for i = 1, #str, 1 do
@@ -349,6 +349,10 @@ local function Setup()
     Render()
 end
 
+local function Shutdown()
+    graphicCache, graphicBuffer = {}, {}
+end
+
 return {
     UpdateResolution = UpdateResolution,
     Clear = Clear,
@@ -370,7 +374,7 @@ return {
 
     DrawTextLeft = DrawTextLeft,
     DrawTextRight = DrawTextRight,
-    DrawTextCentered = DrawTextCentered,
+    DrawTextCentred = DrawTextCentred,
 
     Render = Render
 };
