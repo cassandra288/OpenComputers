@@ -12,7 +12,7 @@ local function Run(callback)
 
     local prevTime = OS.time() * 1000/60/60
     local curTime
-    while running do
+    while ProgramLoop.running do
         curTime = OS.time() * 1000/60/60
         delta = (curTime - prevTime) * 0.05
 
