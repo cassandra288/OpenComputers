@@ -357,6 +357,7 @@ return {
     UpdateResolution = UpdateResolution,
     Clear = Clear,
     Setup = Setup,
+	Shutdown = Shutdown,
 
     GetChar = GetChar,
     SetChar = SetChar,
