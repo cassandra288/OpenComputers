@@ -42,151 +42,193 @@ data = {
 
 
 local running = true
-local base_index = 1
-
-
-local function DrawTitle(h, entry)
-  gpu.set(1, h, entry.text)
-end
-
-local function DrawLib(h, entry)
-  gpu.set(1, h, "[ ] "..entry.text)
-  if entry.selected then
-    gpu.setForeground(0x00ff00)
-    gpu.set(2, h, "X")
-    gpu.setForeground(0xffffff)
-  end
-end
-
-local function DrawFinish(h, entry)
-  gpu.set(1, h, "[-] Select to Continue")
-end
-
-local function UpdateLib(i)
-  entry = data[i]
-  if entry.selected then
-    gpu.setForeground(0x00ff00)
-    gpu.set(2, i, "X")
-    gpu.setForeground(0xffffff)
-  else
-    gpu.set(2, i, " ")
-  end
-end
-
-local function ClearCursor(i)
-  entry = data[i]
-  if entry.type == "lib" then
-    UpdateLib(i)
-  elseif entry.type == "finish" then
-    gpu.set(2, i, "-")
-  end
-end
-
-local function DrawCursor(i)
-  entry = data[i]
-  gpu.setBackground(0xbbbb00)
-  if entry.type == "lib" then
-    UpdateLib(i)
-  elseif entry.type == "finish" then
-    gpu.set(2, i, "-")
-  end
-  gpu.setBackground(0x000000)
-end
-
-local function Select(i)
-  entry = data[i]
-  if entry.type == "finish" then
-    running = false
-    DrawCursor(i)
-  else
-    entry.selected = not entry.selected
-    DrawCursor(i)
-  end
-end
-
-
-local cursor_index = 2
+local draw_offset = 0
+local cursor_index = nil
 local width, height = gpu.getResolution()
 
 gpu.fill(1, 1, width, height, " ")
 
-for i=base_index, math.min(height, #data) do
-  entry = data[i]
-  if entry.type == "title" then
-    DrawTitle(i, entry)
-  elseif entry.type == "lib" then
-    DrawLib(i, entry, i % 2 == 0)
-  elseif entry.type == "finish" then
-    DrawFinish(i, entry)
+for i = 1, #data do
+  if data[i].type == "lib" then
+    cursor_index = i
+    break
   end
 end
-DrawCursor(cursor_index)
 
 
-local function OnKeyDown(_, _, _, key)
-  if key == 28 then
-    Select(cursor_index)
-  elseif key == 200 then
-    next_index = nil
+local function GetDrawHeight(i)
+  return i - draw_offset
+end
+
+
+local function UnhandledType(entry)
+  error("Unhandled type "..entry.type)
+end
+local EntryDrawers = setmetatable({}, { __index = function() return UnhandledType end })
+
+function EntryDrawers.title(entry, i)
+  local drawHeight = GetDrawHeight(i)
+  gpu.set(1, drawHeight, entry.text)
+end
+
+function EntryDrawers.lib(entry, i, cursor)
+  local drawHeight = GetDrawHeight(i)
+  gpu.set(1, drawHeight, "[ ] "..entry.text)
+  
+  if cursor then gpu.setBackground(0xbbbb00) end
+  if entry.selected then
+    gpu.setForeground(0x00ff00)
+    gpu.set(2, drawHeight, "X")
+    gpu.setForeground(0xffffff)
+  else
+    gpu.set(2, drawHeight, " ")
+  end
+  gpu.setBackground(0x000000)
+end
+
+function EntryDrawers.finish(entry, i, cursor)
+  local drawHeight = GetDrawHeight(i)
+  gpu.set(1, drawHeight, "[-] Select to Continue")
+  if cursor then
+    gpu.setBackground(0xbbbb00)
+    gpu.set(2, drawHeight, "-")
+    gpu.setBackground(0x000000)
+  end
+end
+
+
+local function MoveCursor(to)
+  local lowest = draw_offset + 1
+  local highest = height + draw_offset
+  if to == 2 then to = 1 end -- make sure the top title can show up
+  if to < lowest then
+    draw_offset = to - 1
+    gpu.fill(1, 1, width, height, " ")
+    for i = draw_offset + 1, height + draw_offset do
+      EntryDrawers[data[i].type](data[i], i)
+    end
+  elseif to > highest then
+    draw_offset = to - height
+    gpu.fill(1, 1, width, height, " ")
+    for i = draw_offset + 1, height + draw_offset do
+      EntryDrawers[data[i].type](data[i], i)
+    end
+  end
+  if to == 1 then to = 2 end
+
+  from_entry = data[cursor_index]
+  to_entry = data[to]
+
+  EntryDrawers[from_entry.type](from_entry, cursor_index)
+  EntryDrawers[to_entry.type](to_entry, to, true)
+  
+  cursor_index = to
+end
+
+local function Select()
+  data[cursor_index].selected = not data[cursor_index].selected
+
+  EntryDrawers[data[cursor_index].type](data[cursor_index], cursor_index, true)
+
+  if data[cursor_index].type == "finish" then
+    running = false
+  end
+end
+
+
+for i = 1, math.min(height, #data) do
+  local entry = data[i]
+  EntryDrawers[entry.type](entry, i)
+end
+MoveCursor(cursor_index)
+
+
+local function UnhandledEvent()
+  -- do nothing
+end
+local EventHandlers = setmetatable({}, { __index = function() return UnhandledEvent end })
+
+function EventHandlers.interrupted()
+  os.exit()
+end
+
+function EventHandlers.key_down(_, _, key_code)
+  if key_code == 28 then
+    Select()
+  elseif key_code == 200 then
     for i = cursor_index - 1, 1, -1 do
       local type = data[i].type
       if type == "lib" or type == "finish" then
-        next_index = i
+        MoveCursor(i)
         break
       end
     end
-    
-    if next_index then
-      ClearCursor(cursor_index)
-      cursor_index = next_index
-      DrawCursor(cursor_index)
-    end
-  elseif key == 208 then
-    next_index = nil
-    for i = cursor_index + 1, #data do
+  elseif key_code == 208 then
+    for i = cursor_index + 1, #data, 1 do
       local type = data[i].type
       if type == "lib" or type == "finish" then
-        next_index = i
+        MoveCursor(i)
         break
       end
-    end
-    
-    if next_index then
-      ClearCursor(cursor_index)
-      cursor_index = next_index
-      DrawCursor(cursor_index)
     end
   end
 end
-event.listen("key_down", OnKeyDown)
 
-local function OnTouch(_, _, x, y, button)
+function EventHandlers.touch(_, _, y, button)
   if button == 0 then
     local type = data[y].type
     if type == "lib" or type == "finish" then
-      ClearCursor(cursor_index)
-      cursor_index = y
-      Select(cursor_index)
+      MoveCursor(y)
+      Select()
     end
   end
 end
-event.listen("touch", OnTouch)
 
+function EventHandlers.scroll(_, _, _, dir)
+  if dir < 0 then
+    for i = cursor_index + 1, #data, 1 do
+      local type = data[i].type
+      if type == "lib" or type == "finish" then
+        dir = dir + 1
+        if dir == 0 then
+          MoveCursor(i)
+          break
+        end
+      end
+    end
+  elseif dir > 0 then
+    for i = cursor_index - 1, 1, -1 do
+      local type = data[i].type
+      if type == "lib" or type == "finish" then
+        dir = dir - 1
+        if dir == 0 then
+          MoveCursor(i)
+          break
+        end
+      end
+    end
+  end
+end
 
-while running do
-  os.sleep(0.05)
+local function HandleEvent(event_id, ...)
+  if (event_id) then
+    EventHandlers[event_id](...)
+  end
 end
 
 
-event.ignore("key_down", OnKeyDown)
-event.ignore("touch", OnTouch)
+while running do
+  HandleEvent(event.pull())
+
+  os.sleep(0.05)
+end
 
 require("term").setCursor(1, 1)
 gpu.fill(1, 1, width, height, " ")
 
 for i = 1, #data do
   entry = data[i]
-  if entry.base_url then
+  if entry.base_url and entry.selected then
     gpu.setForeground(0xff0000)
     print("Installing "..entry.text)
     gpu.setForeground(0xffffff)
