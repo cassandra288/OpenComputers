@@ -47,6 +47,11 @@ data = {
       "AtomMan.lua",
       "Files/AtomMan/ReactorManager.lua",
       "Files/AtomMan/UIRender.lua"
+    },
+    ["deps"] ={
+      "OpenTGL",
+      "ButtonLib",
+      "ProgramCore"
     }
   },
   {
@@ -165,6 +170,19 @@ local function Select()
 
   if data[cursor_index].type == "finish" then
     running = false
+  elseif data[cursor_index].type == "program" then
+    for _, dep in ipairs(data[cursor_index].deps) do
+      dep_index = nil
+      for i, entry in ipairs(data) do
+        if entry.text == dep then
+          dep_index = i
+          break
+        end
+      end
+
+      data[dep_index].selected = data[cursor_index].selected
+      EntryDrawers[data[dep_index].type](data[dep_index], dep_index, false)
+    end
   end
 end
 
