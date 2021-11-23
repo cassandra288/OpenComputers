@@ -46,7 +46,7 @@ data = {
     ["files"] = {
       "AtomMan.lua",
       "Files/AtomMan/ReactorManager.lua",
-      "Files/AtomMan/UIRenderer.lua"
+      "Files/AtomMan/UIRender.lua"
     }
   },
   {
