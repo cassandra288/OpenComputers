@@ -36,6 +36,20 @@ data = {
     ["text"] = ""
   },
   {
+    ["type"] = "title",
+    ["text"] = "Programs"
+  },
+  {
+    ["type"] = "program",
+    ["text"] = "AtomMan",
+    ["base_url"] = "https://raw.githubusercontent.com/Thomas2889/OpenComputers/master/Programs/AtomMan/",
+    ["files"] = {
+      "AtomMan.lua",
+      "Files/AtomMan/ReactorManager.lua",
+      "Files/AtomMan/UIRenderer.lua"
+    }
+  },
+  {
     ["type"] = "finish"
   }
 }
@@ -158,7 +172,7 @@ function EventHandlers.key_down(_, _, key_code)
   elseif key_code == 200 then
     for i = cursor_index - 1, 1, -1 do
       local type = data[i].type
-      if type == "lib" or type == "finish" then
+      if type == "lib" or type == "finish" or type == "program" then
         MoveCursor(i)
         break
       end
@@ -166,7 +180,7 @@ function EventHandlers.key_down(_, _, key_code)
   elseif key_code == 208 then
     for i = cursor_index + 1, #data, 1 do
       local type = data[i].type
-      if type == "lib" or type == "finish" then
+      if type == "lib" or type == "finish" or type == "program" then
         MoveCursor(i)
         break
       end
@@ -177,7 +191,7 @@ end
 function EventHandlers.touch(_, _, y, button)
   if button == 0 then
     local type = data[y].type
-    if type == "lib" or type == "finish" then
+    if type == "lib" or type == "finish" or type == "program" then
       MoveCursor(y)
       Select()
     end
@@ -188,7 +202,7 @@ function EventHandlers.scroll(_, _, _, dir)
   if dir < 0 then
     for i = cursor_index + 1, #data, 1 do
       local type = data[i].type
-      if type == "lib" or type == "finish" then
+      if type == "lib" or type == "finish" or type == "program" then
         dir = dir + 1
         if dir == 0 then
           MoveCursor(i)
@@ -199,7 +213,7 @@ function EventHandlers.scroll(_, _, _, dir)
   elseif dir > 0 then
     for i = cursor_index - 1, 1, -1 do
       local type = data[i].type
-      if type == "lib" or type == "finish" then
+      if type == "lib" or type == "finish" or type == "program" then
         dir = dir - 1
         if dir == 0 then
           MoveCursor(i)
@@ -233,8 +247,13 @@ for i = 1, #data do
     print("Installing "..entry.text)
     gpu.setForeground(0xffffff)
     for j = 1, #entry.files do
-      require("filesystem").remove("/lib/"..entry.files[j])
-      os.execute("wget "..entry.base_url..entry.files[j].." /lib/"..entry.files[j])
+      if entry.type == "lib" then
+        require("filesystem").remove("/lib/"..entry.files[j])
+        os.execute("wget "..entry.base_url..entry.files[j].." /lib/"..entry.files[j])
+      else
+        require("filesystem").remove("/home/"..entry.files[j])
+        os.execute("wget "..entry.base_url..entry.files[j].." /home/"..entry.files[j])
+      end
     end
   end
 end
