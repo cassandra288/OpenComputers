@@ -50,6 +50,10 @@ data = {
     }
   },
   {
+    ["type"] = "title",
+    ["text"] = ""
+  },
+  {
     ["type"] = "finish"
   }
 }
@@ -255,6 +259,7 @@ end
 require("term").setCursor(1, 1)
 gpu.fill(1, 1, width, height, " ")
 
+local fs = require("filesystem")
 for i = 1, #data do
   entry = data[i]
   if entry.base_url and entry.selected then
@@ -263,10 +268,11 @@ for i = 1, #data do
     gpu.setForeground(0xffffff)
     for j = 1, #entry.files do
       if entry.type == "lib" then
-        require("filesystem").remove("/lib/"..entry.files[j])
+        fs.remove("/lib/"..entry.files[j])
         os.execute("wget "..entry.base_url..entry.files[j].." /lib/"..entry.files[j])
       else
-        require("filesystem").remove("/home/"..entry.files[j])
+        fs.remove("/home/"..entry.files[j])
+        fs.makeDirectory(fs.path(entry.files[j]))
         os.execute("wget "..entry.base_url..entry.files[j].." /home/"..entry.files[j])
       end
     end
