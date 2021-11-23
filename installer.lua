@@ -272,7 +272,7 @@ for i = 1, #data do
         os.execute("wget "..entry.base_url..entry.files[j].." /lib/"..entry.files[j])
       else
         fs.remove("/home/"..entry.files[j])
-        fs.makeDirectory(fs.path(entry.files[j]))
+        fs.makeDirectory("/home/"..fs.path(entry.files[j]))
         os.execute("wget "..entry.base_url..entry.files[j].." /home/"..entry.files[j])
       end
     end
