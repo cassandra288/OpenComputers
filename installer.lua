@@ -100,6 +100,21 @@ function EntryDrawers.lib(entry, i, cursor)
   gpu.setBackground(0x000000)
 end
 
+function EntryDrawers.program(entry, i, cursor)
+  local drawHeight = GetDrawHeight(i)
+  gpu.set(1, drawHeight, "[ ] "..entry.text)
+  
+  if cursor then gpu.setBackground(0xbbbb00) end
+  if entry.selected then
+    gpu.setForeground(0x00ff00)
+    gpu.set(2, drawHeight, "X")
+    gpu.setForeground(0xffffff)
+  else
+    gpu.set(2, drawHeight, " ")
+  end
+  gpu.setBackground(0x000000)
+end
+
 function EntryDrawers.finish(entry, i, cursor)
   local drawHeight = GetDrawHeight(i)
   gpu.set(1, drawHeight, "[-] Select to Continue")
