@@ -12,7 +12,7 @@ data = {
     ["text"] = "OpenTGL",
     ["base_url"] = "https://raw.githubusercontent.com/Thomas2889/OpenComputers/master/Libs/OpenTGL/",
     ["files"] = {
-      "OpenTGL.lua"
+      "OpenTGL.lua",
     }
   },
   {
@@ -20,7 +20,7 @@ data = {
     ["text"] = "ButtonLib",
     ["base_url"] = "https://raw.githubusercontent.com/Thomas2889/OpenComputers/master/Libs/ButtonLib/",
     ["files"] = {
-      "ButtonLib.lua"
+      "ButtonLib.lua",
     }
   },
   {
@@ -28,16 +28,16 @@ data = {
     ["text"] = "ProgramCore",
     ["base_url"] = "https://raw.githubusercontent.com/Thomas2889/OpenComputers/master/Libs/ProgramCore/",
     ["files"] = {
-      "ProgramCore.lua"
+      "ProgramCore.lua",
     }
   },
   {
     ["type"] = "title",
-    ["text"] = ""
+    ["text"] = "",
   },
   {
     ["type"] = "title",
-    ["text"] = "Programs"
+    ["text"] = "Programs",
   },
   {
     ["type"] = "program",
@@ -45,21 +45,37 @@ data = {
     ["base_url"] = "https://raw.githubusercontent.com/Thomas2889/OpenComputers/master/Programs/AtomMan/",
     ["files"] = {
       "AtomMan.lua",
-      "Files/AtomMan/ReactorManager.lua",
-      "Files/AtomMan/UIRender.lua"
+      --"Files/AtomMan/nc_fission/ReactorManager.lua",
+      --"Files/AtomMan/nc_fission/UIRender.lua",
+      --"Files/AtomMan/nc_fission/UIInteraction.lua",
+      "Files/AtomMan/br_passive/ReactorManager.lua",
+      "Files/AtomMan/br_passive/UIRender.lua",
+      "Files/AtomMan/br_passive/UIInteraction.lua",
     },
     ["deps"] ={
       "OpenTGL",
       "ButtonLib",
-      "ProgramCore"
+      "ProgramCore",
+    }
+  },
+  {
+    ["type"] = "program",
+    ["text"] = "UiPlanner",
+    ["base_url"] = "https://raw.githubusercontent.com/Thomas2889/OpenComputers/master/Programs/UiPlanner/",
+    ["files"] = {
+      "UiPlanner.lua",
+    },
+    ["deps"] ={
+      "OpenTGL",
+      "ProgramCore",
     }
   },
   {
     ["type"] = "title",
-    ["text"] = ""
+    ["text"] = "",
   },
   {
-    ["type"] = "finish"
+    ["type"] = "finish",
   }
 }
 
